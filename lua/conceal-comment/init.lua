@@ -86,16 +86,32 @@ function M.clear(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 end
 
+-- Sign column mark left on a concealed line, so it reads as blank-but-hiding
+-- something rather than as if the line were simply gone. Set
+-- vim.g.conceal_comment_sign = false to turn it off.
+local DEFAULT_SIGN = { text = '·', hl_group = 'Comment' }
+
 function M.apply(bufnr)
   bufnr = bufnr or 0
   M.clear(bufnr)
+
+  local sign = vim.g.conceal_comment_sign
+  if sign == nil then
+    sign = DEFAULT_SIGN
+  end
+
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   for _, r in ipairs(M.find_html_comment_ranges(lines)) do
-    vim.api.nvim_buf_set_extmark(bufnr, ns, r[1], r[2], {
+    local opts = {
       end_row = r[3],
       end_col = r[4],
       conceal = '',
-    })
+    }
+    if sign then
+      opts.sign_text = sign.text
+      opts.sign_hl_group = sign.hl_group
+    end
+    vim.api.nvim_buf_set_extmark(bufnr, ns, r[1], r[2], opts)
   end
 end
 

@@ -86,6 +86,32 @@ describe('apply/clear/toggle', function()
     assert.are.equal(0, marks[1][2]) -- row of the top-level comment
   end)
 
+  it('leaves a sign column mark on the concealed line by default', function()
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { '<!-- meta -->' })
+
+    conceal_comment.apply(bufnr)
+
+    local ns = vim.api.nvim_get_namespaces()['html_comment_conceal']
+    local marks = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, { details = true })
+    assert.are.equal(1, #marks)
+    assert.are.equal('· ', marks[1][4].sign_text) -- nvim pads sign_text to 2 cells
+    assert.are.equal('Comment', marks[1][4].sign_hl_group)
+  end)
+
+  it('omits the sign when vim.g.conceal_comment_sign is false', function()
+    vim.g.conceal_comment_sign = false
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { '<!-- meta -->' })
+
+    conceal_comment.apply(bufnr)
+
+    local ns = vim.api.nvim_get_namespaces()['html_comment_conceal']
+    local marks = vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, { details = true })
+    assert.are.equal(1, #marks)
+    assert.is_nil(marks[1][4].sign_text)
+
+    vim.g.conceal_comment_sign = nil
+  end)
+
   it('clear removes all extmarks added by apply', function()
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { '<!-- meta -->' })
     conceal_comment.apply(bufnr)

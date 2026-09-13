@@ -12,6 +12,9 @@ the comments add visual noise while editing prose.
 
 - `<leader>cc` toggles concealing of top-level HTML comments in the current
   Markdown buffer (configurable, see [Configuration](#configuration)).
+- A concealed line is left blank rather than removed, with a small sign
+  column mark (`·` by default) so it doesn't read as if the line were simply
+  gone.
 - Comments inside fenced code blocks (` ``` ... ``` `) are left untouched.
 - Multi-line comments are supported.
 - Ships query overrides that strip every other default `conceal` rule from
@@ -60,6 +63,17 @@ vim.g.conceal_comment_keymap = false
 vim.keymap.set('n', '<leader>x', function()
   require('conceal-comment').toggle()
 end, { desc = 'Toggle HTML comment visibility' })
+```
+
+Set `vim.g.conceal_comment_sign` to change the sign column mark (default
+`{ text = '·', hl_group = 'Comment' }`), or to `false` to leave concealed
+lines fully blank:
+
+```lua
+vim.g.conceal_comment_sign = { text = '┊', hl_group = 'NonText' }
+
+-- Or turn it off entirely
+vim.g.conceal_comment_sign = false
 ```
 
 ## Why the query override?
