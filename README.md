@@ -32,12 +32,6 @@ With [lazy.nvim](https://github.com/folke/lazy.nvim):
 { 'kfly8/conceal-comment.nvim' }
 ```
 
-Or, while developing it locally, point at a local checkout instead:
-
-```lua
-{ dir = '~/src/github.com/kfly8/conceal-comment.nvim' }
-```
-
 Don't lazy-load this on `ft = 'markdown'`: its query override (see below)
 needs to be on `'runtimepath'` before nvim-treesitter's markdown_inline
 highlighter first requests that query, and that race is not safe to leave to
@@ -50,6 +44,9 @@ loading it at startup has no real cost; only its `ftplugin/markdown.lua`
 Open a Markdown file and press `<leader>cc` to hide/show HTML comments.
 
 ## Configuration
+
+By default, the plugin maps `<leader>cc` (`nnoremap <buffer> <leader>cc ...`)
+in every Markdown buffer, and nothing else needs to be set.
 
 Set `vim.g.conceal_comment_keymap` before the Markdown buffer loads (e.g. in
 `init.lua`) to change or disable the default mapping:
