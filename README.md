@@ -8,6 +8,8 @@ Useful for Markdown files that use HTML comments as frontmatter-like
 metadata (e.g. `<!-- {"key":"cover","layout":"cover"} -->` per slide), where
 the comments add visual noise while editing prose.
 
+<video src="assets/demo.mp4" controls></video>
+
 ## Features
 
 - `:ConcealComment` toggles concealing of top-level HTML comments in the
