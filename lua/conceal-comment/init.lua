@@ -2,6 +2,35 @@ local M = {}
 
 local ns = vim.api.nvim_create_namespace('html_comment_conceal')
 
+-- Absolute path to the directory this file lives in.
+local function this_dir()
+  local source = debug.getinfo(1, 'S').source
+  local path = source:sub(1, 1) == '@' and source:sub(2) or source
+  return vim.fn.fnamemodify(path, ':h')
+end
+
+-- Install our after/queries/<lang>/highlights.scm as the live highlights
+-- query for <lang> via vim.treesitter.query.set(). Loading it only through
+-- 'runtimepath' is not reliable here: whether it wins depends on load order
+-- against nvim-treesitter's own query for the same (lang, "highlights")
+-- pair, which this plugin does not control. query.set() takes effect
+-- immediately for any buffers already highlighting with the old query, and
+-- for all future ones, regardless of that order.
+function M.install_query_override(lang)
+  local path = this_dir() .. '/../../after/queries/' .. lang .. '/highlights.scm'
+  if vim.fn.filereadable(path) == 0 then
+    return
+  end
+  local ok, lines = pcall(vim.fn.readfile, path)
+  if not ok then
+    return
+  end
+  vim.treesitter.query.set(lang, 'highlights', table.concat(lines, '\n'))
+end
+
+M.install_query_override('markdown')
+M.install_query_override('markdown_inline')
+
 function M.is_fence_delimiter(line)
   return line:match('^%s*```+') ~= nil or line:match('^%s*~~~+') ~= nil
 end

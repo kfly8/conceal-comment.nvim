@@ -14,10 +14,11 @@ the comments add visual noise while editing prose.
   Markdown buffer (configurable, see [Configuration](#configuration)).
 - Comments inside fenced code blocks (` ``` ... ``` `) are left untouched.
 - Multi-line comments are supported.
-- Ships an `after/queries/markdown_inline/highlights.scm` override that
-  removes nvim-treesitter's default `emphasis_delimiter`/`code_span_delimiter`
-  conceal rule, so toggling this plugin does not also hide `**bold**`/`*italic*`/
-  `` `code` `` markers (see [Why the query override?](#why-the-query-override)).
+- Ships query overrides that strip every other default `conceal` rule from
+  nvim-treesitter's bundled `markdown`/`markdown_inline` highlights, so
+  toggling this plugin's own conceal does not also hide `**bold**`/`*italic*`/
+  `` `code` `` markers, fenced code block delimiters (` ``` `), or collapse
+  `[text](url)` links (see [Why the query override?](#why-the-query-override)).
 
 ## Requirements
 
@@ -28,20 +29,21 @@ the comments add visual noise while editing prose.
 With [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
-{
-  'kfly8/conceal-comment.nvim',
-  ft = 'markdown',
-}
+{ 'kfly8/conceal-comment.nvim' }
 ```
 
 Or, while developing it locally, point at a local checkout instead:
 
 ```lua
-{
-  dir = '~/src/github.com/kfly8/conceal-comment.nvim',
-  ft = 'markdown',
-}
+{ dir = '~/src/github.com/kfly8/conceal-comment.nvim' }
 ```
+
+Don't lazy-load this on `ft = 'markdown'`: its query override (see below)
+needs to be on `'runtimepath'` before nvim-treesitter's markdown_inline
+highlighter first requests that query, and that race is not safe to leave to
+load order between two `ft`-lazy plugins. The plugin itself is tiny, so
+loading it at startup has no real cost; only its `ftplugin/markdown.lua`
+(keymap, autocmd) is filetype-triggered as usual.
 
 ## Usage
 
@@ -65,15 +67,26 @@ end, { desc = 'Toggle HTML comment visibility' })
 
 ## Why the query override?
 
-Extmark `conceal` (and `:syn-conceal`) is gated by the window-local
-`'conceallevel'` option. nvim-treesitter's bundled
-`markdown_inline/highlights.scm` already uses `'conceallevel'` to hide
-emphasis/code-span delimiters (`**`, `*`, `` ` ``). Since this plugin also
-drives `'conceallevel'` to reveal/hide comments, without the override,
-toggling comments would also toggle those delimiters — making
-`**bold**` flicker to `bold`. The bundled
-`after/queries/markdown_inline/highlights.scm` is a full copy of
-nvim-treesitter's query with just that one conceal rule removed.
+Extmark `conceal` (and `:syn-conceal`) is gated by the single window-local
+`'conceallevel'` option — there's no per-feature switch. nvim-treesitter's
+bundled `markdown`/`markdown_inline` highlights already use `'conceallevel'`
+to hide a bunch of raw syntax: emphasis/code-span delimiters (`**`, `*`,
+`` ` ``), fenced code block delimiters and their language label, and
+`[text](url)` link syntax down to just `text`. Since this plugin also drives
+`'conceallevel'` to reveal/hide comments, without stripping those rules,
+toggling comments would also toggle all of that.
+
+`after/queries/markdown/highlights.scm` and
+`after/queries/markdown_inline/highlights.scm` are full copies of
+nvim-treesitter's queries with every `(#set! conceal ...)` rule removed
+(highlighting/colors are kept as-is). Relying on `'runtimepath'` /
+`after/` conventions to make these win over nvim-treesitter's own queries
+turned out not to be reliable in practice — which file "wins" depends on
+load order against nvim-treesitter for the same `(lang, "highlights")` pair,
+and this plugin doesn't control that. So instead, `lua/conceal-comment/init.lua`
+reads these files and installs them directly via `vim.treesitter.query.set()`
+when the module loads, which takes effect immediately regardless of that
+order.
 
 ## Development
 
