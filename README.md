@@ -1,5 +1,7 @@
 # conceal-comment.nvim
 
+[![CI](https://github.com/kfly8/conceal-comment.nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/kfly8/conceal-comment.nvim/actions/workflows/ci.yml)
+
 Toggle the visibility of HTML comments (`<!-- ... -->`) in Markdown buffers.
 
 Useful for Markdown files that use HTML comments as frontmatter-like
@@ -23,7 +25,16 @@ the comments add visual noise while editing prose.
 
 ## Installation
 
-With [lazy.nvim](https://github.com/folke/lazy.nvim), as a local plugin:
+With [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+```lua
+{
+  'kfly8/conceal-comment.nvim',
+  ft = 'markdown',
+}
+```
+
+Or, while developing it locally, point at a local checkout instead:
 
 ```lua
 {
@@ -47,3 +58,16 @@ toggling comments would also toggle those delimiters — making
 `**bold**` flicker to `bold`. The bundled
 `after/queries/markdown_inline/highlights.scm` is a full copy of
 nvim-treesitter's query with just that one conceal rule removed.
+
+## Development
+
+Requires [plenary.nvim](https://github.com/nvim-lua/plenary.nvim) for tests,
+plus [luacheck](https://github.com/mpeterv/luacheck) and
+[stylua](https://github.com/JohnnyMorganz/StyLua) for linting/formatting.
+
+```sh
+make test       # run the test suite
+make lint       # luacheck
+make fmt-check  # stylua --check
+make fmt        # stylua (writes changes)
+```
