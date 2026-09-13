@@ -10,8 +10,8 @@ the comments add visual noise while editing prose.
 
 ## Features
 
-- `<leader>tc` toggles concealing of top-level HTML comments in the current
-  Markdown buffer.
+- `<leader>cc` toggles concealing of top-level HTML comments in the current
+  Markdown buffer (configurable, see [Configuration](#configuration)).
 - Comments inside fenced code blocks (` ``` ... ``` `) are left untouched.
 - Multi-line comments are supported.
 - Ships an `after/queries/markdown_inline/highlights.scm` override that
@@ -45,7 +45,23 @@ Or, while developing it locally, point at a local checkout instead:
 
 ## Usage
 
-Open a Markdown file and press `<leader>tc` to hide/show HTML comments.
+Open a Markdown file and press `<leader>cc` to hide/show HTML comments.
+
+## Configuration
+
+Set `vim.g.conceal_comment_keymap` before the Markdown buffer loads (e.g. in
+`init.lua`) to change or disable the default mapping:
+
+```lua
+-- Use a different key
+vim.g.conceal_comment_keymap = '<leader>hc'
+
+-- Disable the default mapping entirely, and bind it yourself
+vim.g.conceal_comment_keymap = false
+vim.keymap.set('n', '<leader>x', function()
+  require('conceal-comment').toggle()
+end, { desc = 'Toggle HTML comment visibility' })
+```
 
 ## Why the query override?
 
