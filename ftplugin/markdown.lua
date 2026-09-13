@@ -14,8 +14,12 @@
 
 local conceal_comment = require('conceal-comment')
 
+vim.api.nvim_buf_create_user_command(0, 'ConcealComment', function()
+  conceal_comment.toggle()
+end, { desc = 'Toggle HTML comment visibility' })
+
 -- Set vim.g.conceal_comment_keymap = false to disable the default mapping
--- (e.g. to bind require('conceal-comment').toggle() yourself), or to a
+-- (e.g. to bind :ConcealComment to something else yourself), or to a
 -- different lhs string to change it.
 local keymap = vim.g.conceal_comment_keymap
 if keymap == nil then
@@ -23,9 +27,7 @@ if keymap == nil then
 end
 
 if keymap then
-  vim.keymap.set('n', keymap, function()
-    conceal_comment.toggle()
-  end, {
+  vim.keymap.set('n', keymap, '<Cmd>ConcealComment<CR>', {
     buffer = true,
     silent = true,
     desc = 'Toggle HTML comment visibility',

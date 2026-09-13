@@ -10,8 +10,9 @@ the comments add visual noise while editing prose.
 
 ## Features
 
-- `<leader>cc` toggles concealing of top-level HTML comments in the current
-  Markdown buffer (configurable, see [Configuration](#configuration)).
+- `:ConcealComment` toggles concealing of top-level HTML comments in the
+  current Markdown buffer, also mapped to `<leader>cc` by default
+  (configurable, see [Configuration](#configuration)).
 - A concealed line is left blank rather than removed, with a small sign
   column mark (`·` by default) so it doesn't read as if the line were simply
   gone.
@@ -44,15 +45,18 @@ loading it at startup has no real cost; only its `ftplugin/markdown.lua`
 
 ## Usage
 
-Open a Markdown file and press `<leader>cc` to hide/show HTML comments.
+Open a Markdown file and either run `:ConcealComment` or press `<leader>cc`
+to hide/show HTML comments.
 
 ## Configuration
 
-By default, the plugin maps `<leader>cc` (`nnoremap <buffer> <leader>cc ...`)
-in every Markdown buffer, and nothing else needs to be set.
+By default, the plugin defines a buffer-local `:ConcealComment` command in
+every Markdown buffer and maps `<leader>cc` to it; nothing else needs to be
+set.
 
 Set `vim.g.conceal_comment_keymap` before the Markdown buffer loads (e.g. in
-`init.lua`) to change or disable the default mapping:
+`init.lua`) to change or disable the default mapping. `:ConcealComment` (and
+`require('conceal-comment').toggle()`) still work either way:
 
 ```lua
 -- Use a different key
@@ -60,9 +64,7 @@ vim.g.conceal_comment_keymap = '<leader>hc'
 
 -- Disable the default mapping entirely, and bind it yourself
 vim.g.conceal_comment_keymap = false
-vim.keymap.set('n', '<leader>x', function()
-  require('conceal-comment').toggle()
-end, { desc = 'Toggle HTML comment visibility' })
+vim.keymap.set('n', '<leader>x', '<Cmd>ConcealComment<CR>', { desc = 'Toggle HTML comment visibility' })
 ```
 
 Set `vim.g.conceal_comment_sign` to change the sign column mark (default

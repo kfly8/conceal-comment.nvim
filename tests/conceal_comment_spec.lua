@@ -1,5 +1,10 @@
 local conceal_comment = require('conceal-comment')
 
+-- <leader> is resolved against g:mapleader at the time a mapping is
+-- created, so this must be set before any ftplugin runs and registers
+-- <leader>cc below.
+vim.g.mapleader = ' '
+
 describe('find_html_comment_ranges', function()
   it('finds a single-line top-level comment', function()
     local lines = { '<!-- hello -->' }
@@ -133,5 +138,41 @@ describe('apply/clear/toggle', function()
     conceal_comment.toggle(bufnr)
     assert.is_false(vim.b[bufnr].html_comment_concealed)
     assert.are.equal(0, vim.wo.conceallevel)
+  end)
+end)
+
+describe('ftplugin', function()
+  local bufnr
+
+  before_each(function()
+    bufnr = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_set_current_buf(bufnr)
+    vim.bo[bufnr].filetype = 'markdown'
+    -- `runtime! ftplugin/markdown.lua` would also pick up Neovim's own
+    -- bundled ftplugin/markdown.lua, which errors on this filetype-less-at-
+    -- source-time scratch buffer; load only our own file directly instead.
+    dofile(vim.fn.getcwd() .. '/ftplugin/markdown.lua')
+  end)
+
+  after_each(function()
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+  end)
+
+  it('defines a :ConcealComment command that toggles concealing', function()
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { '<!-- meta -->' })
+
+    vim.cmd('ConcealComment')
+    assert.is_true(vim.b[bufnr].html_comment_concealed)
+
+    vim.cmd('ConcealComment')
+    assert.is_false(vim.b[bufnr].html_comment_concealed)
+  end)
+
+  it('maps <leader>cc to :ConcealComment by default', function()
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { '<!-- meta -->' })
+
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<leader>cc', true, false, true), 'x', false)
+
+    assert.is_true(vim.b[bufnr].html_comment_concealed)
   end)
 end)
